@@ -15,8 +15,8 @@ route = "/..."
 [[component]]
 id = "bapi"
 source = "bapi/main.wasm"
-allowed_http_hosts = ["redis://localhost:6379/"]
-environment = {REDIS_ADDRESS = "redis://localhost:6379/"}
+allowed_http_hosts = ["localhost"]
+environment = {REDIS_ADDRESS = "redis://username:password@localhost:17006"}
 [component.trigger]
 route = "/bapi/..."
 [component.build]
