@@ -1,0 +1,204 @@
+<!doctype html>
+<html>
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
+    <meta data-n-head="ssr" charset="utf-8">
+    <meta data-n-head="ssr" name="viewport" content="width=device-width, initial-scale=1">
+    <meta data-n-head="ssr" data-hid="description" name="description" content="guess the movie !!">
+    <meta data-n-head="ssr" charset="utf-8">
+    <meta data-n-head="ssr" name="content-type" http-equiv="Content-type" content="text/html; charset=UTF-8">
+    <meta data-n-head="ssr" name="viewport" content="width=device-width, initial-scale=1">
+    <meta data-n-head="ssr" data-hid="og:title" name="og:title" content="guess the movie !!">
+    <meta data-n-head="ssr" data-hid="og:image" name="og:image"
+      content="https://hollywood-uwzj0qix.fermyon.app/screenshot.png">
+    <meta data-n-head="ssr" data-hid="og:image:alt" name="og:image:alt" content="Guess the movie !!">
+    <meta data-n-head="ssr" data-hid="og:url" name="og:url" content="https://hollywood-uwzj0qix.fermyon.app/index.html">
+    <meta data-n-head="ssr" data-hid="og:description" name="og:description" content="guess the movie !!">
+    <meta data-n-head="ssr" data-hid="og:image:width" name="og:image:width" content="1200">
+    <meta data-n-head="ssr" data-hid="og:image:height" name="og:image:height" content="628">
+    <meta data-n-head="ssr" data-hid="og:image:type" name="og:image:type" content="image/png">
+    <meta data-n-head="ssr" data-hid="twitter:card" name="twitter:card" content="summary_large_image">
+    <meta data-n-head="ssr" data-hid="twitter:site" name="twitter:site" content="@rajatjindal1983">
+    <meta data-n-head="ssr" data-hid="twitter:creator" name="twitter:creator" content="@rajatjindal1983">
+    <meta data-n-head="ssr" data-hid="twitter:title" name="twitter:title" content="guess the movie !!">
+    <meta data-n-head="ssr" data-hid="twitter:description" name="twitter:description"
+      content="guess the movie with Fermyon Cloud !!">
+    <meta data-n-head="ssr" data-hid="twitter:image" name="twitter:image"
+      content="https://hollywood-uwzj0qix.fermyon.app/screenshot.png">
+    <meta data-n-head="ssr" data-hid="twitter:domain" name="twitter:domain"
+      content="https://hollywood-uwzj0qix.fermyon.app/index.html">
+  </head>
+
+  <body>
+    <div class="px-5 pt-2 font-semibold italic">
+      Guess the movie !!
+    </div>
+    <div class="mt-10">
+      <div id="movie" class="w-3/4 mx-auto flex items-center justify-center"></div>
+    </div>
+    <div>
+      <div class="absolute inset-x-0 bottom-10 w-11/12 md:w-3/4 mx-auto grid grid-rows">
+        <div class="items-center justify-center w-1/2 text-xs mx-auto mb-5">
+          <span id="lives">3</span> tries remaining of 9
+        </div>
+        <div id="keyboard-0" class="w-full mx-auto flex items-center justify-center"></div>
+        <div id="keyboard-1" class="w-full mx-auto flex items-center justify-center mt-2"></div>
+        <div id="keyboard-2" class="w-full mx-auto flex items-center justify-center mt-2"></div>
+      </div>
+
+
+    </div>
+
+    <script>
+      let game = null;
+      function renderGreenButton(content) {
+        return renderButton(content, 'text-green-500 bg-green-100')
+      }
+
+      function renderRedButton(content) {
+        return renderButton(content, 'text-red-500 bg-red-100')
+      }
+
+      function renderUnusedButton(content) {
+        return renderButton(content, '')
+      }
+
+      function renderButton(content, textClass) {
+        let button = document.createElement('button');
+        button.classList = 'border p-2 capitalize w-16 h-16 flex items-center justify-center ml-1 ' + textClass;
+        button.onclick = function () { makeAGuess(content) };
+        button.innerText = content;
+
+        return button;
+      }
+
+      function renderKeyboard() {
+        document.getElementById("keyboard-0").innerHTML = "";
+        document.getElementById("keyboard-1").innerHTML = "";
+        document.getElementById("keyboard-2").innerHTML = "";
+
+        document.getElementById("lives").innerText = game.remainingGuesses;
+        const renderer = (keyboardId, item) => {
+          const charCode = item.charCodeAt(0);
+          const div = charCode in game.guessMap ? (game.guessMap[charCode] === 1 ? renderGreenButton(item) : renderRedButton(item)) : renderUnusedButton(item);
+          document.getElementById(keyboardId).appendChild(div);
+          return keyboardId;
+        };
+
+        "qwertyuiop".split("").reduce(renderer, "keyboard-0");
+        "asdfghjkl".split("").reduce(renderer, "keyboard-1");
+        "zxcvbnm".split("").reduce(renderer, "keyboard-2");
+      }
+
+      function renderMovieName() {
+        document.getElementById("movie").innerHTML = "";
+
+        const renderer = (parentId, item) => {
+          let classList = 'p-2 w-16 h-16 flex items-center justify-center ml-1 capitalize';
+          if (item !== ' ') {
+            classList += ' border-2';
+          }
+
+          let div = document.createElement('div');
+          div.classList = classList
+          div.innerText = item;
+
+          document.getElementById(parentId).appendChild(div);
+          return parentId;
+        };
+
+        game.movieName.split("").reduce(renderer, "movie");
+      }
+
+      function getGame() {
+        makeRequest('/bapi/game/' + game.id, 'get', function (http) {
+          if (http.readyState === 4 && http.status === 200) {
+            game = JSON.parse(http.responseText);
+            renderKeyboard();
+            renderMovieName();
+
+            if (game.remainingGuesses == 0) {
+              alert('game over ! better luck next time.');
+              newGame();
+            }
+
+            if (game.guessedSuccessfully) {
+              startConfetti();
+            }
+          }
+        })
+      }
+
+      function makeAGuess(key) {
+        makeRequestWithData('/bapi/guess', 'post', { id: game.id, key: key }, function (http) {
+          if (http.readyState == 4 && http.status == 200) {
+            getGame();
+          }
+
+          if (http.status === 400) {
+            alert("game over");
+            newGame();
+          }
+        })
+      }
+
+      function newGame() {
+        makeRequestWithData('/bapi/new', 'post', { "createdAt": Date.now() }, function (http) {
+          if (http.readyState == 4 && http.status == 200) {
+            game = JSON.parse(http.responseText);
+            renderKeyboard();
+            renderMovieName();
+          }
+        })
+      }
+
+      function makeRequestWithData(url, method, data, callback) {
+        var http = new XMLHttpRequest();
+        http.open(method, url, true);
+
+        http.onreadystatechange = function () {
+          callback(http)
+        }
+        http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        http.send(JSON.stringify(data));
+      }
+
+      function makeRequest(url, method, callback) {
+        var http = new XMLHttpRequest();
+        http.open(method, url, true);
+
+        http.onreadystatechange = function () {
+          callback(http)
+        }
+
+        http.send();
+      }
+
+      function startConfetti() {
+        var duration = 15 * 1000;
+        var animationEnd = Date.now() + duration;
+        var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+        function randomInRange(min, max) {
+          return Math.random() * (max - min) + min;
+        }
+        var interval = setInterval(function () {
+          var timeLeft = animationEnd - Date.now();
+          if (timeLeft <= 0) {
+            return clearInterval(interval);
+          }
+          var particleCount = 50 * (timeLeft / duration);
+          confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+          confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+        }, 250);
+      }
+
+      newGame();
+    </script>
+  </body>
+
+</html>

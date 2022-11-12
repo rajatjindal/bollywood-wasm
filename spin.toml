@@ -1,0 +1,25 @@
+spin_version = "1"
+authors = ["Rajat Jindal <rajatjindal83@gmail.com>"]
+description = "check if we can read files on file system"
+name = "hollywood"
+trigger = { type = "http", base = "/" }
+version = "0.1.0"
+
+[[component]]
+source = "modules/spin_static_fs.wasm"
+id = "fileserver_static"
+files = [ { source = "html/", destination = "/" } ]
+[component.trigger]
+route = "/..."
+
+[[component]]
+id = "bapi"
+source = "bapi/main.wasm"
+allowed_http_hosts = ["redis://localhost:6379/"]
+environment = {REDIS_ADDRESS = "redis://localhost:6379/"}
+[component.trigger]
+route = "/bapi/..."
+[component.build]
+command = "cd bapi && tinygo build -wasm-abi=generic -target=wasi -gc=leaking -no-debug -o main.wasm main.go"
+
+
