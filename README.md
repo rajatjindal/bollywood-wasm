@@ -9,4 +9,4 @@ deploy your own on [Fermyon cloud](https://developer.fermyon.com/cloud/index) in
 - follow instructions on [Fermyon cloud](https://developer.fermyon.com/cloud/index)
 - and you have your own instance of `guess the movie !!`
 
-or head over to [guess the movie](https://hollywood-uwzj0qix.fermyon.app/index.html)
+or head over to [guess the movie](https://hollywood-uwzj0qix.fermyon.app/index.html) to play now
